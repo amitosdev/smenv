@@ -1,4 +1,4 @@
-# smenv
+# smenv [![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
 `smenv` is a Node.js library and command-line tool for fetching secrets from AWS Secrets Manager and updating local environment files. It allows you to keep your sensitive information securely in AWS Secrets Manager and easily sync it with your local environment files.
 
 ## Installation
