@@ -1,0 +1,38 @@
+{
+  "name": "smenv",
+  "version": "0.0.1",
+  "description": "Sync AWS Secret Manager secrets with .env file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "smenv": "./cli.js"
+  },
+  "author": "AmitosDev",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "eslint": "^8.37.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-prettier-standard": "^4.0.1",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.5.0",
+    "prettier": "2.8.7",
+    "prettier-config-standard": "^5.0.0"
+  },
+  "dependencies": {
+    "@jest/globals": "^29.5.0",
+    "cli-color": "^2.0.3",
+    "debug": "^4.3.4",
+    "deep-object-diff": "^1.1.9",
+    "envfile": "^6.18.0",
+    "glob": "^9.3.4",
+    "lodash.isempty": "^4.4.0",
+    "mysterio": "^2.0.1",
+    "yargs": "^17.7.1"
+  }
+}
