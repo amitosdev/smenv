@@ -1,6 +1,6 @@
 {
   "name": "smenv",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Sync AWS Secret Manager secrets with .env file",
   "main": "index.js",
   "type": "module",
