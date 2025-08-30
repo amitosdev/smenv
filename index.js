@@ -1,8 +1,9 @@
 import debug from 'debug'
 import isEmpty from 'lodash.isempty'
-import { backUpEnvFile, getOrCreateCurrentEnvFileName, readEnvFile, writeEnvFile } from './lib/env-file-handler.js'
+import { backUpEnvFile, readEnvFile, resolveCurrentEnvFile, writeEnvFile } from './lib/env-file-handler.js'
 import { getAwsSecrets } from './lib/get-aws-secrets.js'
 import { getDiff } from './lib/get-diff.js'
+import { getPackageName } from './lib/get-package-name.js'
 import { getSecretName } from './lib/get-secret-name.js'
 
 const debugLogger = debug('smenv:index')
@@ -16,7 +17,7 @@ export async function smenv({
   awsSettings = {},
   getAwsSecretsFunc = getAwsSecrets
 }) {
-  const currentFileName = await getOrCreateCurrentEnvFileName(isSupportEnvironment, environment)
+  const currentFileName = await resolveCurrentEnvFile(isSupportEnvironment, environment)
   debugLogger(`current env file name: ${currentFileName}`)
 
   if (isBackupCurrentFile) {
@@ -24,7 +25,8 @@ export async function smenv({
     debugLogger(`current file backed up: ${backupFileName}`)
   }
 
-  const calcSecretName = getSecretName({ secretName, packageName, environment })
+  const calcPackageName = packageName || (await getPackageName())
+  const calcSecretName = getSecretName(secretName, calcPackageName, environment)
   debugLogger(`going to pull secret from AWS for ${calcSecretName}`)
   const awsSecrets = await getAwsSecretsFunc(calcSecretName, awsSettings)
   debugLogger(`AWS Secrets: ${JSON.stringify(awsSecrets)}`)

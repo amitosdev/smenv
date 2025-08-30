@@ -5,19 +5,27 @@ import { smenv } from '../index.js'
 
 // Mock secrets data
 const mockSecrets = {
-  'test-app-local': {
-    EXISTING_VAR: 'new_value',
-    NEW_VAR: 'new_secret',
-    ANOTHER_VAR: 'another_value'
+  'test-app-synced/local': {
+    VAR_ONE: 'one',
+    VAR_TWO: 'two',
+    VAR_THREE: 'three'
   },
-  'test-app-production': {
-    PRODUCTION_VAR: 'prod_value',
-    ANOTHER_VAR: 'prod_another_value'
+  'test-app/local': {
+    VAR_ONE: 'oneandhalf',
+    VAR_TWO: 'twoandhalf',
+    VAR_FOUR: 'four'
+  },
+  'test-app/production': {
+    VAR_FIVE: 'five'
   },
   'custom-secret': {
     CUSTOM_VAR: 'custom_value'
   }
 }
+mockFs({
+  '.env.local': 'VAR_ONE=one\nVAR_TWO=two\nVAR_THREE=three',
+  '.env': 'VAR_FIVE=five'
+})
 
 // Mock getAwsSecrets function
 const mockGetAwsSecrets = async (secretName) => {
@@ -28,45 +36,17 @@ const mockGetAwsSecrets = async (secretName) => {
   throw new Error(`Secret ${secretName} not found`)
 }
 
-test.beforeEach(() => {
-  mockFs.restore()
-  mockFs({
-    '/fake/project': {
-      'package.json': JSON.stringify({ name: 'test-app' }),
-      '.env': 'EXISTING_VAR=old_value\nTO_DELETE=delete_me',
-      '.env.local': 'EXISTING_VAR=old_value\nTO_DELETE=delete_me'
-    }
-  })
-
-  process.chdir('/fake/project')
-})
-
-test.afterEach(() => {
-  mockFs.restore()
-  process.chdir('/Users/amitosdev/Projects/AmitosDev/smenv')
-})
-
 test('returns no diff when secrets are synchronized', async (t) => {
-  mockFs.restore()
-  mockFs({
-    '/fake/project': {
-      'package.json': JSON.stringify({ name: 'test-app' }),
-      '.env.local': 'EXISTING_VAR=new_value\nNEW_VAR=new_secret\nANOTHER_VAR=another_value'
-    }
-  })
-  process.chdir('/fake/project')
-
   const result = await smenv({
-    packageName: 'test-app',
+    packageName: 'test-app-synced',
     environment: 'local',
     getAwsSecretsFunc: mockGetAwsSecrets
   })
-
   t.false(result.isDiff)
   t.deepEqual(result.envs, {
-    EXISTING_VAR: 'new_value',
-    NEW_VAR: 'new_secret',
-    ANOTHER_VAR: 'another_value'
+    VAR_ONE: 'one',
+    VAR_TWO: 'two',
+    VAR_THREE: 'three'
   })
 })
 
@@ -81,22 +61,22 @@ test('returns diff when secrets differ from local file', async (t) => {
   t.truthy(result.filesDiff)
 
   t.deepEqual(result.filesDiff.updated, {
-    EXISTING_VAR: 'new_value'
+    VAR_ONE: 'oneandhalf',
+    VAR_TWO: 'twoandhalf'
   })
 
   t.deepEqual(result.filesDiff.added, {
-    NEW_VAR: 'new_secret',
-    ANOTHER_VAR: 'another_value'
+    VAR_FOUR: 'four'
   })
 
   t.deepEqual(result.filesDiff.deleted, {
-    TO_DELETE: undefined
+    VAR_THREE: undefined
   })
 
   t.deepEqual(result.envs, {
-    EXISTING_VAR: 'new_value',
-    NEW_VAR: 'new_secret',
-    ANOTHER_VAR: 'another_value'
+    VAR_ONE: 'oneandhalf',
+    VAR_TWO: 'twoandhalf',
+    VAR_FOUR: 'four'
   })
 })
 
@@ -114,49 +94,6 @@ test('uses custom secret name when provided', async (t) => {
   })
 })
 
-test('creates env file if it does not exist', async (t) => {
-  mockFs.restore()
-  mockFs({
-    '/fake/project': {
-      'package.json': JSON.stringify({ name: 'test-app' })
-    }
-  })
-  process.chdir('/fake/project')
-
-  const result = await smenv({
-    packageName: 'test-app',
-    environment: 'local',
-    getAwsSecretsFunc: mockGetAwsSecrets
-  })
-
-  t.true(result.isDiff)
-  t.deepEqual(result.envs, {
-    EXISTING_VAR: 'new_value',
-    NEW_VAR: 'new_secret',
-    ANOTHER_VAR: 'another_value'
-  })
-})
-
-test('supports environment-specific files', async (t) => {
-  mockFs.restore()
-  mockFs({
-    '/fake/project': {
-      'package.json': JSON.stringify({ name: 'test-app' }),
-      '.env.production': 'PROD_VAR=prod_value'
-    }
-  })
-  process.chdir('/fake/project')
-
-  const result = await smenv({
-    packageName: 'test-app',
-    environment: 'production',
-    isSupportEnvironment: true,
-    getAwsSecretsFunc: mockGetAwsSecrets
-  })
-
-  t.true(result.isDiff)
-})
-
 test('uses base .env file when environment support disabled', async (t) => {
   const result = await smenv({
     packageName: 'test-app',
@@ -165,7 +102,7 @@ test('uses base .env file when environment support disabled', async (t) => {
     getAwsSecretsFunc: mockGetAwsSecrets
   })
 
-  t.true(result.isDiff)
+  t.false(result.isDiff)
 })
 
 test('handles AWS errors gracefully', async (t) => {

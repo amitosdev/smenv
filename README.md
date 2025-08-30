@@ -24,6 +24,29 @@ npm install -g smenv
 
 This allows you to use the `smenv` command from anywhere on your system.
 
+## AWS Secrets Manager Setup
+
+Before using `smenv`, you need to store your secrets in AWS Secrets Manager with the correct naming convention:
+
+### Secret Naming Structure
+Secrets should be named using the format: `packageName/environment`
+
+Examples:
+- `my-app/local` - for local development
+- `my-app/production` - for production environment  
+- `my-app/staging` - for staging environment
+
+### Secret Value Format
+Store your environment variables as a JSON object in the secret value:
+
+```json
+{
+  "DATABASE_URL": "postgresql://localhost:5432/myapp",
+  "API_KEY": "your-api-key-here",
+  "REDIS_URL": "redis://localhost:6379"
+}
+```
+
 ## Usage
 
 ### Library
@@ -123,7 +146,7 @@ const result = await smenv({
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `secretName` | `string` | `undefined` | The name of the secret to fetch. If not provided, uses `packageName-environment` |
+| `secretName` | `string` | `undefined` | The name of the secret to fetch. If not provided, uses `packageName/environment` |
 | `packageName` | `string` | package.json name | The name of the package/application |
 | `environment` | `string` | `process.env.NODE_ENV \|\| 'local'` | The environment name (e.g., 'local', 'production', 'staging') |
 | `isSupportEnvironment` | `boolean` | `true` | Whether to use environment-specific files (e.g., `.env.production`) |

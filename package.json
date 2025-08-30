@@ -7,10 +7,9 @@
   "scripts": {
     "test": "ava test/*.test.js"
   },
-  "ava": {
-    "concurrency": 1,
-    "serial": true,
-    "workerThreads": false
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amitosdev/smenv.git"
   },
   "bin": {
     "smenv": "./bin/cli.js"
