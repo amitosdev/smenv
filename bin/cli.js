@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-const yargs = require('yargs')
-const smenv = require('../index')
-const isEmpty = require('lodash.isempty')
-const log = require('./log')
+import isEmpty from 'lodash.isempty'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import { smenv } from '../index.js'
+import log from './log.js'
+
 async function main() {
-  const { argv } = yargs
+  const { argv } = yargs(hideBin(process.argv))
     .usage('Usage: $0 [options]')
     .options({
       secretName: {
@@ -30,72 +32,59 @@ async function main() {
         defaultDescription: '.env',
         type: 'string'
       },
-      backupRetention: {
-        alias: 'r',
-        describe: 'The number of backup files to retain',
-        defaultDescription: 3,
-        type: 'number'
+      supportEnvironment: {
+        describe: 'Support environment-specific files (e.g., .env.production)',
+        defaultDescription: true,
+        type: 'boolean'
+      },
+      backup: {
+        alias: 'b',
+        describe: 'Create a backup of the current file before updating',
+        defaultDescription: false,
+        type: 'boolean'
       }
     })
-    .example(
-      '$0 --secretName mySecret',
-      'Fetches the specified secret from AWS Secrets Manager'
-    )
-    .example(
-      '$0 --packageName myApp --env production',
-      'Specifies custom package name and environment'
-    )
-    .example(
-      '$0 -s mySecret -p myApp -e production -f .env.prod -r 5',
-      'Specifies all options at once'
-    )
-  const result = await smenv(argv)
+    .example('$0 --secretName mySecret', 'Fetches the specified secret from AWS Secrets Manager')
+    .example('$0 --packageName myApp --env production', 'Specifies custom package name and environment')
+    .example('$0 -s mySecret -p myApp -e production --backup', 'Specifies options with backup enabled')
 
-  if (!result.isDiff) {
-    log(
-      'green',
-      `local file "${result.fileName}" is synced with "${result.secretName}"`
-    )
+  const { isDiff, filesDiff } = await smenv({
+    secretName: argv.secretName,
+    packageName: argv.packageName,
+    environment: argv.env,
+    isSupportEnvironment: argv.supportEnvironment !== false,
+    isBackupCurrentFile: argv.backup === true
+  })
+
+  if (!isDiff) {
+    log('green', 'local environment file is synced with AWS Secrets Manager')
     return
   }
-  const {
-    filesDiff: { added, deleted, updated },
-    backupFileName,
-    secretName,
-    fileName,
-    deletedFiles
-  } = result
 
-  log('magenta', `diff found from local file "${fileName}" to "${secretName}"`)
+  log('cyan', 'differences found between local .env file and AWS Secrets Manager')
 
-  if (!isEmpty(added)) {
-    log(
-      'green',
-      `Added ${Object.keys(added).length} secrets: ${JSON.stringify(added)}`
-    )
+  // Print added variables (green with +)
+  if (!isEmpty(filesDiff.added)) {
+    Object.entries(filesDiff.added).forEach(([key, value]) => {
+      log('green', `+${key}=${value}`)
+    })
   }
-  if (!isEmpty(deleted)) {
-    log(
-      'red',
-      `Removed ${Object.keys(deleted).length} secrets: ${JSON.stringify(
-        deleted
-      )}`
-    )
+
+  // Print deleted variables (red with -)
+  if (!isEmpty(filesDiff.deleted)) {
+    Object.keys(filesDiff.deleted).forEach((key) => {
+      log('red', `-${key}`)
+    })
   }
-  if (!isEmpty(updated)) {
-    log(
-      'yellow',
-      `Updated ${Object.keys(updated).length} secrets: ${JSON.stringify(
-        updated
-      )}`
-    )
+
+  // Print updated variables (show new value)
+  if (!isEmpty(filesDiff.updated)) {
+    Object.entries(filesDiff.updated).forEach(([key, newValue]) => {
+      log('yellow', `~${key}=${newValue}`)
+    })
   }
-  if (backupFileName) {
-    log('cyan', `back up file created: ${backupFileName}`)
-  }
-  if (deletedFiles) {
-    log('red', `old backup files deleted: ${deletedFiles}`)
-  }
+
+  log('magenta', 'Environment variables synchronized with AWS Secrets Manager')
 }
 
 main().catch((error) => {

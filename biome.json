@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"],
+    "ignoreUnknown": true
+  },
+  "linter": {
+    "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "info",
+          "options": { "maxAllowedComplexity": 50 }
+        }
+      },
+      "style": {
+        "useBlockStatements": "off",
+        "noCommonJs": "error",
+        "useNamingConvention": "warn",
+        "useFilenamingConvention": "warn",
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
+      },
+      "correctness": {
+        "noNodejsModules": "off",
+        "useImportExtensions": "error",
+        "noUndeclaredVariables": "error"
+      }
+    },
+    "domains": {
+      "test": "recommended"
+    }
+  },
+  "formatter": {
+    "formatWithErrors": true,
+    "lineWidth": 120,
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded",
+      "quoteStyle": "single",
+      "trailingCommas": "none"
+    }
+  }
+}

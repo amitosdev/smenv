@@ -1,4 +1,5 @@
-const clc = require('cli-color')
-module.exports = (color, msg) => {
-  console.log(clc[color]('[smenv]: ' + msg))
+import clc from 'cli-color'
+
+export default (color, msg) => {
+  console.log(clc[color](`[smenv]: ${msg}`))
 }

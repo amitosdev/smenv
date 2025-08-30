@@ -1,60 +1,47 @@
-const getSecrets = require('./lib/get-secrets')
-const {
-  readFile,
-  backUpFile,
-  writeFile,
-  removeOldBackups
-} = require('./lib/file-handler')
-const debug = require('debug')('smenv:index')
-const diff = require('./lib/get-diff')
-const isEmpty = require('lodash.isempty')
-const path = require('path')
+import debug from 'debug'
+import isEmpty from 'lodash.isempty'
+import { backUpEnvFile, getOrCreateCurrentEnvFileName, readEnvFile, writeEnvFile } from './lib/env-file-handler.js'
+import { getAwsSecrets } from './lib/get-aws-secrets.js'
+import { getDiff } from './lib/get-diff.js'
+import { getSecretName } from './lib/get-secret-name.js'
 
-module.exports = async ({
+const debugLogger = debug('smenv:index')
+
+export async function smenv({
   secretName,
-  packageName = require(path.join(process.cwd(), 'package.json')).name,
-  env = process.env.NODE_ENV || 'development',
-  fileName = '.env',
-  backupFileRetentionAmount = 3
-}) => {
-  debug(
-    `called with secretName=${secretName}, packageName=${packageName}, env=${env}, fileName=${fileName}, backupFileRetentionAmount=${backupFileRetentionAmount}`
-  )
+  packageName,
+  environment = process.env.NODE_ENV || 'local',
+  isSupportEnvironment = true,
+  isBackupCurrentFile = false,
+  awsSettings = {},
+  getAwsSecretsFunc = getAwsSecrets
+}) {
+  const currentFileName = await getOrCreateCurrentEnvFileName(isSupportEnvironment, environment)
+  debugLogger(`current env file name: ${currentFileName}`)
 
-  const calcSecretName = secretName || `${packageName}/${env}`
-  debug(`going to pull secret from AWS for ${calcSecretName}`)
-
-  const awsSecrets = await getSecrets(calcSecretName)
-  debug(`AWS Secrets: ${JSON.stringify(awsSecrets)}`)
-
-  const currentSecret = await readFile(fileName)
-  debug(`current secrets: ${JSON.stringify(currentSecret)}`)
-
-  const filesDiff = diff(currentSecret, awsSecrets)
-  debug(`diff:`, filesDiff)
-  if (
-    isEmpty(filesDiff.added) &&
-    isEmpty(filesDiff.deleted) &&
-    isEmpty(filesDiff.updated)
-  ) {
-    debug('no changes detected')
-    return { isDiff: false, secretName: calcSecretName, fileName }
+  if (isBackupCurrentFile) {
+    const backupFileName = await backUpEnvFile(currentFileName)
+    debugLogger(`current file backed up: ${backupFileName}`)
   }
 
-  const backupFileName = await backUpFile(fileName)
-  debug(`current file backed up: ${backupFileName || 'none'}`)
+  const calcSecretName = getSecretName({ secretName, packageName, environment })
+  debugLogger(`going to pull secret from AWS for ${calcSecretName}`)
+  const awsSecrets = await getAwsSecretsFunc(calcSecretName, awsSettings)
+  debugLogger(`AWS Secrets: ${JSON.stringify(awsSecrets)}`)
 
-  await writeFile(fileName, awsSecrets)
-  debug(`current file written: ${fileName}`)
+  const currentEnvContent = await readEnvFile(currentFileName)
+  debugLogger(`current env content: ${JSON.stringify(currentEnvContent)}`)
 
-  const { deletedFiles } = await removeOldBackups(backupFileRetentionAmount)
+  const filesDiff = getDiff(currentEnvContent, awsSecrets)
+  debugLogger('diff from AWS secret: ', JSON.stringify(filesDiff))
 
-  return {
-    isDiff: true,
-    filesDiff,
-    backupFileName,
-    secretName: calcSecretName,
-    fileName,
-    deletedFiles
+  if (isEmpty(filesDiff.added) && isEmpty(filesDiff.deleted) && isEmpty(filesDiff.updated)) {
+    debugLogger('no changes detected')
+    return { isDiff: false, envs: currentEnvContent }
   }
+
+  await writeEnvFile(currentFileName, awsSecrets)
+  debugLogger(`current file written: ${currentFileName}`)
+
+  return { isDiff: true, filesDiff, envs: awsSecrets }
 }

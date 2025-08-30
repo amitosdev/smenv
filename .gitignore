@@ -132,3 +132,6 @@ dist
 
 # temp file
 1.js
+
+# claude-ai
+.claude/
