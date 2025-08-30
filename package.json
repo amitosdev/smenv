@@ -9,10 +9,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/amitosdev/smenv.git"
+    "url": "git+https://github.com/amitosdev/smenv.git"
   },
   "bin": {
-    "smenv": "./bin/cli.js"
+    "smenv": "bin/cli.js"
   },
   "author": "AmitosDev",
   "license": "Apache-2.0",
