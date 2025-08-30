@@ -2,6 +2,8 @@
 `smenv` is a Node.js library and command-line tool for fetching secrets from AWS Secrets Manager and updating local environment files. It allows you to keep your sensitive information securely in AWS Secrets Manager and easily sync it with your local environment files.
 
 ## Installation
+
+### As a project dependency
 You can install `smenv` as a dependency in your Node.js project using `npm` or `yarn`:
 
 ```bash
@@ -12,6 +14,15 @@ or
 ```bash
 yarn add smenv
 ```
+
+### Global installation (recommended)
+For easy access across all projects, install `smenv` globally:
+
+```bash
+npm install -g smenv
+```
+
+This allows you to use the `smenv` command from anywhere on your system.
 
 ## Usage
 
@@ -133,6 +144,23 @@ The function returns a Promise that resolves to an object with:
 ### Command-line tool
 You can also use `smenv` as a command-line tool by running the `smenv` command with the following options:
 
+#### Recommended Usage in Projects
+For the best developer experience, add `smenv` to your npm scripts to automatically sync secrets before starting your application:
+
+```json
+{
+  "scripts": {
+    "start": "smenv -e local && node server.js",
+    "dev": "smenv -e development && npm run dev-server",
+    "prod": "smenv -e production && npm start"
+  }
+}
+```
+
+This ensures your environment variables are always up-to-date with the latest secrets from AWS Secrets Manager before your application starts.
+
+#### CLI Options
+
 ```bash
 Usage: smenv [options]
 
@@ -159,6 +187,9 @@ Examples:
   production                                environment
   smenv -s mySecret -p myApp -e            Specifies options with backup
   production --backup                       enabled
+  smenv --backup                           Creates a backup of current .env file
+                                            before updating
+  smenv -b                                 Same as --backup (short form)
 ```
 
 ## License

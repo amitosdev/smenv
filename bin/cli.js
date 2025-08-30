@@ -47,6 +47,8 @@ async function main() {
     .example('$0 --secretName mySecret', 'Fetches the specified secret from AWS Secrets Manager')
     .example('$0 --packageName myApp --env production', 'Specifies custom package name and environment')
     .example('$0 -s mySecret -p myApp -e production --backup', 'Specifies options with backup enabled')
+    .example('$0 --backup', 'Creates a backup of current .env file before updating')
+    .example('$0 -b', 'Same as --backup (short form)')
 
   const { isDiff, filesDiff } = await smenv({
     secretName: argv.secretName,

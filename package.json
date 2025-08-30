@@ -13,7 +13,7 @@
     "workerThreads": false
   },
   "bin": {
-    "smenv": "./cli.js"
+    "smenv": "./bin/cli.js"
   },
   "author": "AmitosDev",
   "license": "Apache-2.0",
