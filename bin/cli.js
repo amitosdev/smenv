@@ -33,8 +33,8 @@ async function main() {
         type: 'string'
       },
       supportEnvironment: {
-        describe: 'Support environment-specific files (e.g., .env.production)',
-        defaultDescription: true,
+        describe: 'Enable environment-specific files (e.g., .env.production)',
+        defaultDescription: false,
         type: 'boolean'
       },
       backup: {
@@ -49,12 +49,13 @@ async function main() {
     .example('$0 -s mySecret -p myApp -e production --backup', 'Specifies options with backup enabled')
     .example('$0 --backup', 'Creates a backup of current .env file before updating')
     .example('$0 -b', 'Same as --backup (short form)')
+    .example('$0 --supportEnvironment', 'Uses environment-specific files like .env.production')
 
   const { isDiff, filesDiff } = await smenv({
     secretName: argv.secretName,
     packageName: argv.packageName,
     environment: argv.env,
-    isSupportEnvironment: argv.supportEnvironment !== false,
+    isSupportEnvironment: argv.supportEnvironment === true,
     isBackupCurrentFile: argv.backup === true
   })
 

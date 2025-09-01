@@ -149,7 +149,7 @@ const result = await smenv({
 | `secretName` | `string` | `undefined` | The name of the secret to fetch. If not provided, uses `packageName/environment` |
 | `packageName` | `string` | package.json name | The name of the package/application |
 | `environment` | `string` | `process.env.NODE_ENV \|\| 'local'` | The environment name (e.g., 'local', 'production', 'staging') |
-| `isSupportEnvironment` | `boolean` | `true` | Whether to use environment-specific files (e.g., `.env.production`) |
+| `isSupportEnvironment` | `boolean` | `false` | Whether to use environment-specific files (e.g., `.env.production`) |
 | `isBackupCurrentFile` | `boolean` | `false` | Whether to create a backup before updating the file |
 | `awsSettings` | `object` | `{}` | AWS configuration settings (region, credentials, etc.) |
 | `getAwsSecretsFunc` | `function` | `getAwsSecrets` | Custom function to retrieve secrets. Receives `(secretName, awsSettings)` and should return an object of key-value pairs |
@@ -198,8 +198,8 @@ Options:
               [string] [default: NODE_ENV environment variable or 'development']
   -f, --fileName            The name of the file to write secrets to
                                                         [string] [default: .env]
-      --supportEnvironment  Support environment-specific files (e.g.,
-                            .env.production)           [boolean] [default: true]
+      --supportEnvironment  Enable environment-specific files (e.g.,
+                            .env.production)           [boolean] [default: false]
   -b, --backup              Create a backup of the current file before updating
                                                                        [boolean]
 
@@ -210,6 +210,8 @@ Examples:
   production                                environment
   smenv -s mySecret -p myApp -e            Specifies options with backup
   production --backup                       enabled
+  smenv --supportEnvironment               Enables environment-specific files,
+                                            uses .env.production instead of .env
   smenv --backup                           Creates a backup of current .env file
                                             before updating
   smenv -b                                 Same as --backup (short form)

@@ -12,7 +12,7 @@ export async function smenv({
   secretName,
   packageName,
   environment = process.env.NODE_ENV || 'local',
-  isSupportEnvironment = true,
+  isSupportEnvironment = false,
   isBackupCurrentFile = false,
   awsSettings = {},
   getAwsSecretsFunc = getAwsSecrets

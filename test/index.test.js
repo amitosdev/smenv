@@ -40,6 +40,7 @@ test('returns no diff when secrets are synchronized', async (t) => {
   const result = await smenv({
     packageName: 'test-app-synced',
     environment: 'local',
+    isSupportEnvironment: true,
     getAwsSecretsFunc: mockGetAwsSecrets
   })
   t.false(result.isDiff)
@@ -54,6 +55,7 @@ test('returns diff when secrets differ from local file', async (t) => {
   const result = await smenv({
     packageName: 'test-app',
     environment: 'local',
+    isSupportEnvironment: true,
     getAwsSecretsFunc: mockGetAwsSecrets
   })
 
@@ -85,6 +87,7 @@ test('uses custom secret name when provided', async (t) => {
     secretName: 'custom-secret',
     packageName: 'test-app',
     environment: 'local',
+    isSupportEnvironment: true,
     getAwsSecretsFunc: mockGetAwsSecrets
   })
 
